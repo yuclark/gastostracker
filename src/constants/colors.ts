@@ -1,11 +1,11 @@
 export const COLORS = {
-  background: '#F9FBFC',
-  card: '#FFFFFF',
-  textPrimary: '#1E293B',
-  textSecondary: '#64748B',
-  primary: '#4F46E5', // Indigo
-  success: '#10B981', // Emerald
-  danger: '#EF4444',  // Red
-  border: '#E2E8F0',
-  tint: '#4F46E5'
+  background: '#3A3A3A',     // Charcoal core backdrop
+  card: '#444444',           // Slightly lighter charcoal for containers
+  textPrimary: '#F0E5B6',    // Soft cream yellow primary text accent
+  textSecondary: '#BCBCBC',  // Muted platinum subtext gray
+  primary: '#E2C974',        // Deep gold interactive nodes
+  success: '#76C787',        // Vibrant pastel green for incoming cashflow
+  danger: '#D6745A',         // Soft pastel coral red for outgoing expenses
+  border: '#555555',         // Low-contrast panel outline separation lines
+  tint: '#E2C974'            // Persistent golden tab highlight
 };
