@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput, Alert, SafeAreaView, Platform } from 'react-native';
+import React, { useState, useEffect, ComponentProps } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput, Alert, SafeAreaView, Platform, StatusBar } from 'react-native';
 import { COLORS } from '../../src/constants/colors';
 import { db } from '../../src/config/db';
 import { useIsFocused } from '@react-navigation/native';
@@ -10,7 +10,7 @@ export default function RecordsScreen() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  // Pop-up Selection Modal States (Replacing Dropdowns)
+  // Pop-up Selection Modal States
   const [isAccountPickerOpen, setIsAccountPickerOpen] = useState(false);
   const [isCategoryPickerOpen, setIsCategoryPickerOpen] = useState(false);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
@@ -36,7 +36,7 @@ export default function RecordsScreen() {
   const [currentMinute, setCurrentMinute] = useState(new Date().getMinutes());
   const [isPm, setIsPm] = useState(new Date().getHours() >= 12);
 
-  // Account Balances Cache State for Account Selection Sheet
+  // Account Balances Cache
   const [accountBalances, setAccountBalances] = useState<{ [key: string]: number }>({});
 
   // Core List Data Views
@@ -60,7 +60,6 @@ export default function RecordsScreen() {
       const accs = await db.query("SELECT name FROM dynamic_accounts ORDER BY name ASC");
       setAccountsList(accs.map((a: any) => a.name));
 
-      // Dynamically calculate current balance for every account to show in pop-up list
       const balancesCache: { [key: string]: number } = {};
       for (const a of accs.map((acc: any) => acc.name)) {
         const balRes = await db.query(
@@ -287,9 +286,10 @@ export default function RecordsScreen() {
           <Text style={styles.fabBtnText}>+</Text>
         </TouchableOpacity>
 
-        {/* Core Calculation Overlay Module */}
+        {/* Dynamic Calculator Overlay Portal Layout Block Frame */}
         <Modal visible={isModalOpen} animationType="slide" transparent={false}>
-          <SafeAreaView style={styles.modalSafeContainer}>
+          {/* NOTICE: View layout wrapper replaces SafeAreaView inside the modal for strict padding control */}
+          <View style={styles.modalSafeContainer}>
             <View style={styles.modalHeaderTopBar}>
               <TouchableOpacity onPress={closeAndResetModal}><Text style={styles.headerActionBtnText}>✕ CANCEL</Text></TouchableOpacity>
               {editingId && (
@@ -310,7 +310,6 @@ export default function RecordsScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Custom Interactive Selection Node Toggles */}
             <View style={styles.dualDropdownSelectorsFlexRow}>
               <TouchableOpacity style={styles.selectorDropdownNode} onPress={() => setIsAccountPickerOpen(true)}>
                 <Text style={styles.selectorDropdownNodeText}>💳 {account || 'Account'}</Text>
@@ -365,7 +364,7 @@ export default function RecordsScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* A. Account Sheet Pop-up View Modal Configuration (`image_3f467f.jpg`) */}
+            {/* Account Bottom Sheet Pop-up */}
             <Modal visible={isAccountPickerOpen} transparent={true} animationType="slide">
               <View style={styles.bottomSheetModalBackdrop}>
                 <View style={styles.bottomSheetCardContainer}>
@@ -387,7 +386,7 @@ export default function RecordsScreen() {
                   </ScrollView>
                   <TouchableOpacity 
                     style={styles.sheetBottomActionButtonBlock}
-                    onPress={() => { setIsAccountPickerOpen(false); Alert.alert("Account Matrix", "Navigate to Accounts tab module to append dynamic core assets configuration rows."); }}
+                    onPress={() => { setIsAccountPickerOpen(false); Alert.alert("Account Matrix", "Navigate to Accounts tab module to config dynamic assets."); }}
                   >
                     <Text style={styles.sheetBottomActionBtnText}>➕ ADD NEW ACCOUNT</Text>
                   </TouchableOpacity>
@@ -398,7 +397,7 @@ export default function RecordsScreen() {
               </View>
             </Modal>
 
-            {/* B. Category Grid Fullscreen Pop-up View Modal Configuration (`image_3f467c.jpg`) */}
+            {/* Category Grid Fullscreen Pop-up */}
             <Modal visible={isCategoryPickerOpen} transparent={true} animationType="fade">
               <View style={styles.fullscreenPopupModalBackdrop}>
                 <SafeAreaView style={{ flex: 1, width: '100%' }}>
@@ -424,7 +423,7 @@ export default function RecordsScreen() {
               </View>
             </Modal>
 
-            {/* 1. Pop-up Calendar Dialog */}
+            {/* Pop-up Calendar Dialog */}
             <Modal visible={isDatePickerOpen} transparent={true} animationType="fade">
               <View style={styles.pickerBackdropCenteredBlur}>
                 <View style={styles.calendarDialogContainerBox}>
@@ -461,7 +460,7 @@ export default function RecordsScreen() {
               </View>
             </Modal>
 
-            {/* 2. Pop-up Clock Dial Dialog */}
+            {/* Pop-up Clock Dial Dialog */}
             <Modal visible={isTimePickerOpen} transparent={true} animationType="fade">
               <View style={styles.pickerBackdropCenteredBlur}>
                 <View style={styles.clockDialogContainerBox}>
@@ -501,7 +500,7 @@ export default function RecordsScreen() {
               </View>
             </Modal>
 
-          </SafeAreaView>
+          </View>
         </Modal>
       </View>
     </SafeAreaView>
@@ -510,7 +509,15 @@ export default function RecordsScreen() {
 
 const styles = StyleSheet.create({
   safeContainer: { flex: 1, backgroundColor: COLORS.background, paddingTop: Platform.OS === 'android' ? 40 : 0 },
-  modalSafeContainer: { flex: 1, backgroundColor: COLORS.background, padding: 16, justifyContent: 'space-between' },
+  // Overhauled for strict notch clear guidance padding top properties on android platforms
+  modalSafeContainer: { 
+    flex: 1, 
+    backgroundColor: COLORS.background, 
+    paddingHorizontal: 16, 
+    paddingBottom: 16, 
+    paddingTop: Platform.OS === 'android' ? 52 : 16, 
+    justifyContent: 'space-between' 
+  },
   innerContentWrapper: { flex: 1, paddingHorizontal: 16 },
   appTitleHeaderLabel: { color: COLORS.textPrimary, fontSize: 16, fontWeight: '800', textAlign: 'center', marginVertical: 12 },
   monthHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
@@ -553,8 +560,6 @@ const styles = StyleSheet.create({
   keypadCellBtnText: { color: '#FFF', fontSize: 22, fontWeight: '600' },
   modalBottomDateTimePickerStrip: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#555', paddingTop: 14, paddingHorizontal: 4 },
   statusStripTextLabel: { color: COLORS.textPrimary, fontSize: 14, fontWeight: '700' },
-  
-  // Account Bottom Sheet Modal UI Styling Elements (`image_3f467f.jpg`)
   bottomSheetModalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   bottomSheetCardContainer: { backgroundColor: COLORS.card, borderTopLeftRadius: 18, borderTopRightRadius: 18, padding: 18, paddingBottom: Platform.OS === 'ios' ? 24 : 14 },
   sheetHeaderTitleLabel: { color: COLORS.textPrimary, fontSize: 16, fontWeight: '700', textAlign: 'center', marginBottom: 16 },
@@ -566,8 +571,6 @@ const styles = StyleSheet.create({
   sheetBottomActionButtonBlock: { marginTop: 14, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: COLORS.primary, alignItems: 'center' },
   sheetBottomActionBtnText: { color: COLORS.textPrimary, fontSize: 13, fontWeight: '700' },
   sheetCloseCancelTextBtn: { marginTop: 12, paddingVertical: 8 },
-
-  // Category Fullscreen Grid Pop-up UI Styling Elements (`image_3f467c.jpg`)
   fullscreenPopupModalBackdrop: { flex: 1, backgroundColor: COLORS.background, padding: 16 },
   fullscreenPopupHeaderTitleLabel: { color: COLORS.textPrimary, fontSize: 16, fontWeight: '800', textAlign: 'center', marginVertical: 14 },
   fullscreenGridScrollContainerLayout: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start', paddingBottom: 24 },
@@ -577,8 +580,6 @@ const styles = StyleSheet.create({
   gridCategoryLabelStringText: { color: '#FFF', fontSize: 11, fontWeight: '600', width: '90%', textAlign: 'center' },
   fullscreenPopupDismissFooterBtn: { padding: 14, backgroundColor: '#2E2E2E', borderRadius: 10, alignItems: 'center', marginTop: 10, borderWidth: 1, borderColor: '#444' },
   fullscreenPopupDismissFooterBtnText: { color: COLORS.textSecondary, fontSize: 13, fontWeight: '700' },
-
-  // Calendar Picker Styling Node Elements
   pickerBackdropCenteredBlur: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   dialogActionsBarFooterRow: { flexDirection: 'row', justifyContent: 'flex-end', padding: 12 },
   dialogActionBtn: { paddingHorizontal: 16, paddingVertical: 10, marginLeft: 8 },
@@ -597,8 +598,6 @@ const styles = StyleSheet.create({
   calendarDayCellNode: { width: 34, height: 34, borderRadius: 17, justifyContent: 'center', alignItems: 'center', margin: 2 },
   calendarDayCellNodeActive: { backgroundColor: COLORS.primary },
   calendarDayCellText: { color: '#FFF', fontSize: 12 },
-
-  // Clock Picker Styling Node Elements
   clockDialogContainerBox: { width: '100%', maxWidth: 280, backgroundColor: '#3E3E3E', borderRadius: 8, overflow: 'hidden' },
   clockTopDisplayHeader: { backgroundColor: '#525252', padding: 18, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
   clockHeaderDigitsText: { color: COLORS.textPrimary, fontSize: 36, fontWeight: '400', marginRight: 12 },
